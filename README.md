@@ -82,6 +82,43 @@ Sound cues are configured in `[sound.events]` in `config.toml`.
 `voice_ready` plays once when a recording crosses from rejecting silence to
 accepting voice.
 
+## How it works
+
+The stack is a set of decoupled user processes coordinated over a Unix socket:
+
+- **Daemon (`dictate.py`)** — captures audio with `pw-record` (16 kHz mono),
+  runs `faster-whisper` (`large-v3` on CUDA), reconciles rolling-window
+  transcripts into stable text, injects it into the focused field, and serves a
+  newline-delimited JSON control socket (`state/dictation.sock`).
+- **Control CLI (`dictatectl.py`)** — `status`, `start`, `stop-commit`,
+  `stop-cancel`, `toggle-live`, `switch-profile`, `inject-text`,
+  `simulate-divergence`, `external-event`, and more.
+- **Input listeners** — X11 mouse and extra-key services that just call the
+  daemon over the socket.
+- **Tray + HUD (`tray.py`)** — PyQt6 status surfaces.
+- **Android bridge (`android_bridge.py`)** — optional WebSocket server that
+  feeds phone speech-recognition events in as `external-event`s.
+
+A few design points worth knowing:
+
+- **Voice gate.** Capture is gated on sustained signal (roughly 8 chunks over
+  1.0% RMS plus 3 over 2.0%) before any text is injected, so silence and stray
+  triggers don't type anything. The gate level is shown live in the tray meter.
+- **Live reconciliation.** As you speak, the daemon re-transcribes a rolling
+  audio window; a *live strategy* turns those overlapping, self-revising
+  transcripts into one monotonically growing stream. `rolling_append` (default)
+  appends the stable common prefix; `mutable_tail` keeps the last couple of
+  tokens as a backspace-and-replace draft. It only ever deletes text it injected
+  this session, and on live/final divergence it replaces its own live text with
+  the final transcript rather than leaving the field wrong.
+- **Injection.** Backends are tried in order — `ydotool` (tuned with
+  `--key-delay 4 --key-hold 4`) → `wtype` → `xdotool` → `stdout`.
+- **Status is out-of-band.** All state lives in the tray icon, the HUD, and
+  sound cues. Nothing but dictated text is ever typed into your field.
+
+See [`profiles/`](profiles) for decode profiles and `config.toml` for the model,
+audio, streaming, injection, and sound settings.
+
 ## Manage
 
 ```fish
