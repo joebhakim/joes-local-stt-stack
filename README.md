@@ -1,5 +1,8 @@
 # Joe's Local STT Stack
 
+**STANDARD WARNING AS ALWAYS: this software was vibe coded, no guarantees that its 
+usable or cool or good or anything, in fact it might be TRASH but works really well for me**
+
 Local faster-whisper dictation for X11/KDE. Runtime state stays under
 `state/` and `logs/`; both are gitignored.
 
