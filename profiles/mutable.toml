@@ -1,0 +1,10 @@
+name = "mutable"
+default_mode = "live"
+chunk_ms = 180
+window_seconds = 8.0
+min_window_seconds = 0.7
+stable_rounds = 1
+live_commit = true
+live_strategy = "mutable_tail"
+inject_backends = ["ydotool", "wtype", "xdotool", "stdout"]
+append_trailing_space = true

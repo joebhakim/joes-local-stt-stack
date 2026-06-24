@@ -1,0 +1,64 @@
+[paths]
+state_dir = "state"
+socket_path = "state/dictation.sock"
+pid_file = "state/dictation.pid"
+log_file = "logs/dictation.log"
+preview_file = "state/preview.txt"
+status_file = "state/status.json"
+last_commit_file = "state/last_commit.txt"
+
+[audio]
+sample_rate = 16000
+channels = 1
+sample_format = "s16"
+read_chunk_ms = 40
+# Optional PipeWire source target (name/ID). Empty means default input device.
+target = ""
+capture_command = [
+  "pw-record",
+  "--rate", "16000",
+  "--channels", "1",
+  "--format", "s16",
+  "--raw",
+  "-",
+]
+
+[model]
+name = "large-v3"
+device = "cuda"
+compute_type = "float16"
+language = "en"
+beam_size = 1
+vad_filter = false
+condition_on_previous_text = false
+cuda_lib_hints = true
+
+[streaming]
+default_mode = "ptt"
+chunk_ms = 400
+window_seconds = 8.0
+min_window_seconds = 1.2
+stable_rounds = 2
+live_commit = true
+
+[injection]
+fallback_backends = ["ydotool", "wtype", "xdotool", "stdout"]
+append_trailing_space = true
+
+[sound]
+enabled = true
+player = "paplay"
+
+[sound.events]
+recording = "/usr/share/sounds/ocean/stereo/audio-volume-change.oga"
+voice_ready = "/usr/share/sounds/ocean/stereo/button-pressed.oga"
+finalizing = "/usr/share/sounds/ocean/stereo/completion-partial.oga"
+committed = "/usr/share/sounds/ocean/stereo/completion-success.oga"
+no_voice = "/usr/share/sounds/ocean/stereo/dialog-warning.oga"
+no_audio = "/usr/share/sounds/ocean/stereo/dialog-warning.oga"
+cancelled = "/usr/share/sounds/ocean/stereo/button-pressed-modifier.oga"
+error = "/usr/share/sounds/ocean/stereo/dialog-error.oga"
+
+[profiles]
+dir = "profiles"
+default = "default"

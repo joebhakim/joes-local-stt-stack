@@ -1,0 +1,10 @@
+name = "superfast"
+default_mode = "live"
+chunk_ms = 120
+window_seconds = 5.0
+min_window_seconds = 0.45
+stable_rounds = 1
+live_commit = true
+live_strategy = "draft_replace"
+inject_backends = ["ydotool", "wtype", "xdotool", "stdout"]
+append_trailing_space = true

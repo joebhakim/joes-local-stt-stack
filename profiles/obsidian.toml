@@ -1,0 +1,10 @@
+name = "obsidian"
+default_mode = "live"
+chunk_ms = 450
+window_seconds = 9.0
+min_window_seconds = 1.2
+stable_rounds = 3
+live_commit = true
+live_strategy = "rolling_append"
+inject_backends = ["paste", "ydotool", "wtype", "xdotool", "stdout"]
+append_trailing_space = true

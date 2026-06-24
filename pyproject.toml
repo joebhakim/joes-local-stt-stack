@@ -1,0 +1,27 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "personal-stt-stack"
+version = "0.1.0"
+description = "Personal local dictation stack for X11/KDE and Codex/kitty."
+requires-python = ">=3.11"
+dependencies = [
+  "faster-whisper",
+  "numpy",
+  "python-xlib",
+  "websockets==16.0",
+]
+
+[project.optional-dependencies]
+tray = ["PyQt6"]
+
+[project.scripts]
+personal-dictationd = "dictate:main"
+personal-dictatectl = "dictatectl:main"
+personal-dictation-tray = "tray:main"
+personal-stt-android-bridge = "android_bridge:main"
+
+[tool.setuptools]
+py-modules = ["android_bridge", "dictate", "dictatectl", "tray"]
