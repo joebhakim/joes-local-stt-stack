@@ -3,6 +3,25 @@
 Local faster-whisper dictation for X11/KDE. Runtime state stays under
 `state/` and `logs/`; both are gitignored.
 
+<table align="center">
+  <tr valign="top">
+    <td align="center">
+      <img src="docs/hud-compact.png" width="300" alt="Compact HUD applet"><br>
+      <sub><b>Compact applet</b></sub>
+    </td>
+    <td align="center">
+      <img src="docs/hud-details.png" width="340" alt="Expanded HUD details view"><br>
+      <sub><b>Details view</b></sub>
+    </td>
+  </tr>
+</table>
+
+The draggable, always-on-top HUD (and the system-tray icon) carry all dictation
+status out-of-band, so nothing but dictated text ever lands in your focused
+field. `Compact` is the small applet with the accepted/partial draft and
+record/commit controls; `Details` expands into scrollable session and
+audio/commit field tables.
+
 ## Use
 
 ```fish
