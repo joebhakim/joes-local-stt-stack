@@ -54,6 +54,71 @@ There is no mouse cancel binding. Use this if needed:
 fish scripts/ptt_cancel.fish
 ```
 
+## Hotkeys
+
+Bindings come from three independent routes; use any combination.
+
+**Mouse buttons** — the X11 listener `scripts/x11_mouse_dictation.py` (started by
+`scripts/start_mouse_dictation_whisper_live.sh`) passively grabs the side
+buttons: `Shift+Button9` records, `Shift+Button8` commits. Run it with `--probe`
+to print the X11 number of whatever button you press, then rebind with
+`--start-button` / `--commit-button` / `--modifier` (defaults `9`, `8`, `shift`).
+
+**Dedicated extra keys** — the listener `scripts/x11_keyboard_dictation.py`
+(started by `scripts/start_keyboard_dictation.sh`) takes over the keyboard's
+media keys. The launcher maps them with explicit `--binding` entries:
+
+| Key | Original purpose | Repurposed to |
+| --- | --- | --- |
+| `XF86HomePage` (Home key) | open browser homepage | start recording (current profile) |
+| `XF86Mail` (Mail key) | open mail client | commit |
+| `XF86PowerOff` / `XF86PowerDown` | power menu / sleep | start a debug recording |
+
+**KDE global keyboard shortcuts** (optional) — `scripts/install_kde_hotkeys.fish`
+registers `Meta+Ctrl+Shift+R` (record), `+C` (commit), `+X` (discard), `+L`
+(toggle live) by writing `.desktop` files and `kglobalshortcutsrc` entries with
+`kwriteconfig6`; `scripts/install_kde_toggle_shortcut.fish` adds a single
+press-to-toggle (default `Meta+Ctrl+Alt+F8`). These are key-*press* shortcuts,
+not hold-to-talk.
+
+### How the Home and Mail keys get commandeered
+
+The keyboard's dedicated **Home** and **Mail** keys emit the X11 media-key
+keysyms `XF86HomePage` and `XF86Mail`, which the desktop normally routes to
+"launch browser" and "launch mail client." `scripts/x11_keyboard_dictation.py`
+steals them with a **passive X11 grab on the root window**:
+
+1. It resolves each keysym to a physical keycode (`keysym_to_keycode`).
+2. It calls `root.grab_key(keycode, modifier, owner_events=False, ...)`, which
+   tells the X server to deliver that key to the dictation listener instead of
+   the focused window or the desktop's media-key handler — intercepting it
+   globally. `owner_events=False` means the keypress is **fully consumed**, so
+   the original browser/mail launcher never fires.
+3. It grabs under every CapsLock/NumLock combination, so the binding still works
+   with lock keys engaged.
+4. On each press it runs the mapped command (`ptt_press_profile.fish current`
+   for Home, `ptt_release_commit.fish` for Mail), debounced ~0.45 s.
+
+**Caveat — you may have to take the key back from KDE first.** A passive grab
+fails with `BadAccess` if another client already owns the key, and KDE binds
+these media keys by default. If `logs/x11_keyboard_dictation.log` shows
+`could not grab key=... another client may own it`, disable KDE's default action
+for that key (System Settings → Shortcuts, or remove its `kglobalshortcutsrc`
+entry) so the listener can win the grab. This is the same reason the power keys
+need their KDE shortcuts disabled **and** `HandlePowerKey=ignore` in
+`systemd-logind`.
+
+### Finding and rebinding keys
+
+Probe mode prints the keysym/keycode/modifiers for whatever you press:
+
+```fish
+python scripts/x11_keyboard_dictation.py --probe --keys XF86HomePage,XF86Mail
+```
+
+Then edit the `--binding MODIFIER KEYSYM LABEL COMMAND` lines in
+`scripts/start_keyboard_dictation.sh` to map any keysym to any action.
+
 ## Status
 
 The tray icon and floating HUD are the status surfaces. Nothing should be typed
